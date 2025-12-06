@@ -1,0 +1,141 @@
+# Ghost Blog Deployment
+# A complete Ghost CMS deployment with persistent storage
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ghost
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ghost-content
+  namespace: ghost
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ghost-config
+  namespace: ghost
+data:
+  url: "https://yourdomain.com"  # Replace with your domain
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ghost
+  namespace: ghost
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ghost
+  strategy:
+    type: Recreate  # Required for RWO volumes
+  template:
+    metadata:
+      labels:
+        app: ghost
+    spec:
+      containers:
+      - name: ghost
+        image: ghost:5-alpine
+        ports:
+        - containerPort: 2368
+          name: http
+        env:
+        - name: url
+          valueFrom:
+            configMapKeyRef:
+              name: ghost-config
+              key: url
+        - name: NODE_ENV
+          value: production
+        - name: database__client
+          value: sqlite3
+        - name: database__connection__filename
+          value: /var/lib/ghost/content/data/ghost.db
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+        - name: ghost-content
+          mountPath: /var/lib/ghost/content
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 2368
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 2368
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: ghost-content
+        persistentVolumeClaim:
+          claimName: ghost-content
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ghost
+  namespace: ghost
+spec:
+  selector:
+    app: ghost
+  ports:
+  - port: 2368
+    targetPort: 2368
+    name: http
+---
+# Optional: Ingress for local access (without Cloudflare Tunnel)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ghost
+  namespace: ghost
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - yourdomain.com        # Replace with your domain
+    - www.yourdomain.com    # Replace with your domain
+    secretName: wildcard-tls
+  rules:
+  - host: yourdomain.com    # Replace with your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ghost
+            port:
+              number: 2368
+  - host: www.yourdomain.com  # Replace with your domain
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ghost
+            port:
+              number: 2368

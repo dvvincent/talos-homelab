@@ -1,0 +1,25 @@
+# Cloudflare Tunnel ClusterTunnel
+# This creates cloudflared pods that connect to Cloudflare's edge
+---
+apiVersion: networking.cfargotunnel.com/v1alpha1
+kind: ClusterTunnel
+metadata:
+  name: homelab-tunnel
+spec:
+  cloudflare:
+    accountId: "${CLOUDFLARE_ACCOUNT_ID}"  # Replace with your account ID
+    domain: "${CLOUDFLARE_DOMAIN}"          # Replace with your domain
+    secret: "cloudflare-secrets"
+  image: "cloudflare/cloudflared:latest"
+  # Use ONE of the following:
+  
+  # Option 1: Create a NEW tunnel
+  newTunnel:
+    name: "homelab-k8s-tunnel"
+  
+  # Option 2: Use an EXISTING tunnel (uncomment and fill in)
+  # existingTunnel:
+  #   id: "your-tunnel-id"
+  #   name: "your-tunnel-name"
+  
+  size: 2  # Number of cloudflared replicas

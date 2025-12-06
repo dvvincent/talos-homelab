@@ -1,0 +1,16 @@
+# Wildcard Certificate for your domain
+# Update the domain name to match your domain
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: wildcard-cert
+  namespace: default
+spec:
+  secretName: wildcard-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - '*.yourdomain.com'  # Replace with your domain
+  - 'yourdomain.com'    # Replace with your domain

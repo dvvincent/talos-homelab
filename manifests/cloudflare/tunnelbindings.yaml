@@ -1,0 +1,25 @@
+# TunnelBindings define which services to expose through the tunnel
+# Create one TunnelBinding per namespace/application
+---
+# Example: Ghost Blog binding
+apiVersion: networking.cfargotunnel.com/v1alpha1
+kind: TunnelBinding
+metadata:
+  name: ghost-binding
+  namespace: ghost  # Must be in the same namespace as the service
+subjects:
+  - kind: Service
+    name: ghost
+    spec:
+      fqdn: yourdomain.com  # Replace with your domain
+      protocol: http
+      target: http://ghost.ghost.svc.cluster.local:2368
+  - kind: Service
+    name: ghost
+    spec:
+      fqdn: www.yourdomain.com  # Replace with your domain
+      protocol: http
+      target: http://ghost.ghost.svc.cluster.local:2368
+tunnelRef:
+  kind: ClusterTunnel
+  name: homelab-tunnel

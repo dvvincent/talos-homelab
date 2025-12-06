@@ -1,0 +1,29 @@
+# Talos Homelab Repository
+# Sensitive files - do not commit
+
+# Generated configs
+_out/
+kubeconfig
+talosconfig
+
+# Environment with secrets
+config.env
+
+# Generated patch files (contain IPs)
+talos/patches/*.yaml
+!talos/patches/*.yaml.tmpl
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+BLOG.md

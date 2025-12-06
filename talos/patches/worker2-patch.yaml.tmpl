@@ -1,0 +1,25 @@
+machine:
+  network:
+    hostname: ${WORKER2_HOSTNAME}
+    interfaces:
+      - interface: ${NETWORK_INTERFACE}
+        addresses:
+          - ${WORKER2_IP}/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: ${GATEWAY}
+    nameservers:
+      - 8.8.8.8
+      - 1.1.1.1
+  install:
+    disk: /dev/sda
+    image: factory.talos.dev/installer/${TALOS_IMAGE_SCHEMATIC}:${TALOS_VERSION}
+  kubelet:
+    extraMounts:
+      - destination: /var/lib/longhorn
+        type: bind
+        source: /var/lib/longhorn
+        options:
+          - bind
+          - rshared
+          - rw
