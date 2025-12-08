@@ -65,6 +65,9 @@ Create 3 VMs in Proxmox using the scripts in `talos/scripts/`.
 cp config.example.env config.env
 # Edit config.env with your values
 
+# Run pre-flight checks
+./preflight.sh
+
 # Generate Talos configs
 ./talos/scripts/generate-configs.sh
 
@@ -94,6 +97,7 @@ kubectl apply -f manifests/cloudflare/
 ├── README.md
 ├── BLOG.md                    # Detailed blog post about the build
 ├── config.example.env         # Example configuration
+├── preflight.sh               # Pre-flight checks script
 ├── deploy.sh                  # Main deployment script
 ├── docs/
 │   ├── TALOS-CLUSTER-SETUP.md
